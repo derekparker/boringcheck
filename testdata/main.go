@@ -25,6 +25,9 @@ func HasNoBoringCheck() bool {
 	return false
 }
 
+func TestBoringCheck() {}
+func BenchmarkBoringCheck() {}
+
 func main() {
 	HasBoringCheck()
 	HasWrongBoringCheck()

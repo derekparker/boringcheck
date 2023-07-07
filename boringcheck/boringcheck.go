@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type funcVisitor struct {
@@ -17,12 +18,19 @@ type funcVisitor struct {
 
 func (v *funcVisitor) Visit(node ast.Node) ast.Visitor {
 	if pkg, ok := node.(*ast.Package); ok {
+		if strings.HasSuffix(pkg.Name, "_test") {
+			return nil
+		}
 		v.curpkg = pkg.Name
 		return v
 	}
 	if fn, ok := node.(*ast.FuncDecl); ok {
 		if v.curfn != "" {
 			v.fns = append(v.fns, fmt.Sprintf("%s.%s", v.curpkg, v.curfn))
+		}
+		if strings.HasPrefix(fn.Name.Name, "Test") || strings.HasPrefix(fn.Name.Name, "Benchmark") {
+			v.curfn = ""
+			return nil
 		}
 		if fn.Recv == nil {
 			v.curfn = fn.Name.Name
