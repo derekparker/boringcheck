@@ -24,7 +24,16 @@ func (v *funcVisitor) Visit(node ast.Node) ast.Visitor {
 		if v.curfn != "" {
 			v.fns = append(v.fns, fmt.Sprintf("%s.%s", v.curpkg, v.curfn))
 		}
-		v.curfn = fn.Name.Name
+		if fn.Recv == nil {
+			v.curfn = fn.Name.Name
+		} else {
+			switch t := fn.Recv.List[0].Type.(type) {
+			case *ast.StarExpr:
+				v.curfn = fmt.Sprintf("(*%s).%s", t.X, fn.Name.Name)
+			case *ast.Ident:
+				v.curfn = fmt.Sprintf("(%s).%s", t, fn.Name.Name)
+			}
+		}
 	}
 	if ifstmt, ok := node.(*ast.IfStmt); ok {
 		if ifstmt.Cond != nil {
